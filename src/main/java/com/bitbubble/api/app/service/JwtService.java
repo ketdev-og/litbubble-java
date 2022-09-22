@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.bitbubble.api.app.entitiy.JwtRequest;
 import com.bitbubble.api.app.entitiy.JwtResponse;
+import com.bitbubble.api.app.entitiy.User;
 import com.bitbubble.api.app.repository.UserRepo;
 import com.bitbubble.api.app.util.jwtutil;
 
@@ -26,30 +27,33 @@ public class JwtService implements UserDetailsService {
     private UserRepo userRepo;
 
     @Autowired
-    AuthenticationManager authenticationManager; 
+    AuthenticationManager authenticationManager;
 
-    public JwtResponse createJwtResponse(JwtRequest jwtRequest){
-       String userName = jwtRequest.getUserName();
-       String userPassword = jwtRequest.getUserPassword();
-       
-       
-       return null;
+    public JwtResponse createJwtResponse(JwtRequest jwtRequest) throws Exception {
+        String userName = jwtRequest.getUserName();
+        String userPassword = jwtRequest.getUserPassword();
+        authenticate(userName, userPassword);
+        return null;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+      User user =  userRepo.findByUserName(username).get();
+      if(user != null){
+        return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getUserPassword(), authorities)
+      }
         return null;
     }
 
-    private void authenticate(String userName, String userPassword) throws Exception{
+    private void authenticate(String userName, String userPassword) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
         } catch (DisabledException e) {
-                throw new Exception("user disabled");
-        } catch (BadCredentialsException e){
+            throw new Exception("user disabled");
+        } catch (BadCredentialsException e) {
             throw new Exception("bad credentials from user");
         }
-        
+
     }
-    
+
 }
