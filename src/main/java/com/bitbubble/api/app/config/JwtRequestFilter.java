@@ -19,6 +19,9 @@ import com.bitbubble.api.app.service.JwtService;
 import com.bitbubble.api.app.util.jwtutil;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.AllArgsConstructor;
+
+
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -26,7 +29,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private jwtutil jwtutil;
 
     @Autowired
-    private JwtService jwtService;
+    private JwtService jService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -34,10 +37,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         final String header = request.getHeader("Authorization");
         String jwtToken = null;
         String userName = null;
-
+        
         if (header != null && header.startsWith("Bearer ")) {
-            jwtToken = header.substring(7);
-
+            jwtToken = header.substring("Bearer ".length());
+           
             try {
                 userName = jwtutil.getUserNameFromToken(jwtToken);
             } catch (IllegalArgumentException e) {
@@ -50,7 +53,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = jwtService.loadUserByUsername(userName);
+            UserDetails userDetails = jService.loadUserByUsername(userName);
             if (jwtutil.validateToken(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -61,7 +64,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
             }
         }
+        
+   
         filterChain.doFilter(request, response);
+        
     }
 
 }

@@ -1,9 +1,11 @@
 package com.bitbubble.api.app.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +19,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.AllArgsConstructor;
 
 
 
@@ -35,17 +41,28 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     @Override
-    public AuthenticationManager authenticationManager() throws Exception {
+    public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors();
-        http.csrf().disable().authorizeRequests().antMatchers("/auth/**").permitAll()
+        http.csrf().disable().authorizeRequests().antMatchers("/authenticate","/register_user","/createRole").permitAll()
+                .antMatchers("/auth/admin/*").hasAuthority("ROLE_ADMIN")
+                .antMatchers("/auth/*").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                 .antMatchers(HttpHeaders.ALLOW).permitAll()
                 .anyRequest().authenticated()
-                .and().exceptionHandling().authenticationEntryPoint(jAuthenticationEntrypoint)
+                .and().exceptionHandling().authenticationEntryPoint((request, response, authException) -> {
+                    Map<String, Object> responseMap = new HashMap<>();
+                    ObjectMapper mapper = new ObjectMapper();
+                    response.setStatus(401);
+                    responseMap.put("error", true);
+                    responseMap.put("message", "Unauthorized");
+                    response.setHeader("content-type", "application/json");
+                    String responseMsg = mapper.writeValueAsString(responseMap);
+                    response.getWriter().write(responseMsg);
+                })
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
@@ -59,4 +76,5 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
         authenticationManagerBuilder.userDetailsService(jwtService).passwordEncoder(passwordEncoder());
     }
+    
 }

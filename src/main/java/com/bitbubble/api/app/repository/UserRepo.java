@@ -10,6 +10,6 @@ import com.bitbubble.api.app.entitiy.User;
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
 
-    Optional<User> findByUserName(String username);
+    Optional<User> findByEmail(String email);
     
 }
