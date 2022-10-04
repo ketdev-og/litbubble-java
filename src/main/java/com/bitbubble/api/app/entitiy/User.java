@@ -20,14 +20,12 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-
 import lombok.Data;
-
 import lombok.NonNull;
 
 
-@Entity
 @Data
+@Entity
 @Table(name = "Users")
 public class User {
 
@@ -40,7 +38,6 @@ public class User {
 
     
     @Column(unique = true)
-    @NonNull
     private String email;
 
     @JsonIgnore
@@ -49,7 +46,6 @@ public class User {
     private String userLastName;
 
     @Column(unique = true)
-    @NonNull
     private String userPassword;
 
     @Column(unique = true)

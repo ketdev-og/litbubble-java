@@ -57,6 +57,7 @@ public class UserController {
 
             SendEmailEvent emv = new SendEmailEvent();
             emv.setEmailAddress(userInfo.getEmail());
+            emv.setVerifyCode(userInfo.getVerifyCode());
             emv.setEmailSubject("LITBUBBLE EMAIL VERIFICATION");
             
             eventPublisher.publishEvent(emv);

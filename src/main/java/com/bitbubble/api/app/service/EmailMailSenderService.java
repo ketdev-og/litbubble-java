@@ -35,7 +35,7 @@ public class EmailMailSenderService {
         Context context = new Context();
         context.setVariables(mail.getProps());
     
-        final String template = "inlined-css-template";
+        final String template = "newsletter-template";
         String html = templateEngine.process(template, context);
             helper.setFrom("lilbubble@auth.com");
             helper.setTo(mail.getEmailAddress());

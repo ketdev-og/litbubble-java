@@ -30,9 +30,8 @@ public class SendEmailListner {
 
          Map<String, Object> model = new HashMap<String, Object>();
         model.put("name", event.getEmailAddress());
-        model.put("location", "United States");
-        model.put("sign", "Java Developer");
-        model.put("type", "NEWSLETTER");
+        model.put("verifyCode", event.getVerifyCode());
+       
         mailinfo.setProps(model);
             
         emailMailSenderService.sendEmail(mailinfo);
