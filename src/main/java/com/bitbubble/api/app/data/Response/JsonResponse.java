@@ -1,4 +1,4 @@
-package com.bitbubble.api.app.entitiy;
+package com.bitbubble.api.app.data.Response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

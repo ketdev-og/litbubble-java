@@ -31,6 +31,7 @@ public class SendEmailListner {
          Map<String, Object> model = new HashMap<String, Object>();
         model.put("name", event.getEmailAddress());
         model.put("verifyCode", event.getVerifyCode());
+        model.put("resetToken", event.getResetToken());
        
         mailinfo.setProps(model);
             

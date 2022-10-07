@@ -4,7 +4,10 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.catalina.authenticator.SpnegoAuthenticator.AuthenticateAction;
+import org.aspectj.apache.bcel.classfile.Utility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
@@ -16,21 +19,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bitbubble.api.app.data.Requests.VerifyCode;
+import com.bitbubble.api.app.data.Requests.VerifyEmail;
 import com.bitbubble.api.app.data.Response.Response;
 import com.bitbubble.api.app.entitiy.Role;
 import com.bitbubble.api.app.entitiy.User;
+import com.bitbubble.api.app.repository.UserRepo;
 import com.bitbubble.api.app.service.RoleService;
 import com.bitbubble.api.app.service.UserService;
 import com.bitbubble.api.app.util.CommonUtil;
 import com.bitbubble.api.app.util.events.SendEmailEvent;
 
+import net.bytebuddy.utility.RandomString;
+
 @RestController
 public class UserController {
 
-  
     @Autowired
     ApplicationEventPublisher eventPublisher;
-   
+
     @Autowired
     private UserService userService;
 
@@ -38,65 +45,128 @@ public class UserController {
     private RoleService roleService;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping({ "/register_user" })
     private Map<String, Object> createUser(@RequestBody User user) {
+
         CommonUtil commonUtil = new CommonUtil();
         try {
-            Set<Role> userRole = roleService.findByRoleName("User");
-            user.setRole(userRole);
-            user.setUserPassword(getEncodedPassword(user.getUserPassword()));
 
+            Set<Role> userRole = roleService.findByRoleName("User");
+            System.out.println(userRole);
+            user.setRole(userRole);
+
+            user.setUserPassword(CommonUtil.getEncodedPassword(user.getUserPassword(), passwordEncoder));
             user.setVerifyCode(commonUtil.RandomNumber());
 
-            Response response = new Response();
             User userInfo = userService.createUser(user);
-            Map<String, Object> res = response.responseOk();
+
+            Map<String, Object> res = Response.responseOk();
             res.put("data", userInfo);
 
             SendEmailEvent emv = new SendEmailEvent();
             emv.setEmailAddress(userInfo.getEmail());
             emv.setVerifyCode(userInfo.getVerifyCode());
             emv.setEmailSubject("LITBUBBLE EMAIL VERIFICATION");
-            
+
             eventPublisher.publishEvent(emv);
             return res;
         } catch (Exception e) {
-            Response response = new Response();
-            Map<String, Object> err = response.responseError();
+
+            Map<String, Object> err = Response.responseError();
             err.put("data", e.getMessage());
             return err;
         }
 
     }
 
-    private String getUserAuth() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userDetails.getUsername();
+    @PostMapping("/token/verify")
+    private Map<String, Object> verifyUserToken(@RequestBody VerifyCode token) {
+        CommonUtil common = new CommonUtil();
+        try {
+
+            Map<String, Object> res = Response.responseOk();
+
+            if (!common.VerifyToken(token.getToken())) {
+                res.put("data", "invalid token " + token.getToken());
+                return res;
+            }
+
+            User user = userService.getVerifyCode(token.getToken());
+            user.setIsVerified(true);
+            userService.createUser(user);
+
+            res.put("data", "verfied");
+            res.put("user", user);
+
+            return res;
+        } catch (Exception e) {
+            Map<String, Object> err = Response.responseError();
+            err.put("data", e.getMessage());
+            return err;
+        }
+
     }
 
-    @GetMapping({ "/auth/admin/admin_url" })
-    public String forAdmin() {
+    // cleect password and send mails
+    @PostMapping("/forgot_password")
+    private Map<String, Object> processForgotPassword(HttpServletRequest request, @RequestBody VerifyEmail email) {
+        CommonUtil commonUtil = new CommonUtil();
+        String token = RandomString.make(30);
         try {
-            return "Admin url";
+            userService.updateResetPasswordToken(token, email.getEmail());
+            String resetPasswordLink = commonUtil.getSiteUrl(request) + "reset_password?token=" + token;
+
+            SendEmailEvent emv = new SendEmailEvent();
+            emv.setEmailAddress(email.getEmail());
+            emv.setEmailSubject("RESET PASSWORD");
+            emv.setResetToken(resetPasswordLink);
+            eventPublisher.publishEvent(emv);
+
+            Map<String, Object> res = Response.responseOk();
+            res.put("data", "verification code sent successfully");
+            return res;
         } catch (Exception e) {
-            return e.getMessage();
+            Map<String, Object> err = Response.responseError();
+            err.put("data", e.getMessage());
+            return err;
         }
     }
 
-    @GetMapping({ "/auth/user/user_url" })
-    public String forUser() {
+    // reset the password in data base
+    // react should have the site url then param should be rest token
+    // use resettoken to check if user is verified
+    @PostMapping("/valid_reset_password")
+    private Boolean processForgotPassword(@RequestBody String token) {
         try {
-            
-            return "user url";
+            User user = userService.getPasswordResetToken(token);
+            if (user.getValidToReset().equals(true)) {
+                return true;
+            } else {
+                return false;
+            }
         } catch (Exception e) {
-            return e.getMessage();
+            return false;
         }
+
     }
 
-    public String getEncodedPassword(String password) {
-        return passwordEncoder.encode(password);
+    @PostMapping("/update_passowrd")
+    private Map<String, Object> updateUserPassword(@RequestBody String newPassword, @RequestBody String token) {
+        try {
+            User user = userService.getPasswordResetToken(token);
+            userService.updatePassword(user, newPassword);
+
+            Map<String, Object> res = Response.responseOk();
+            res.put("data", "verification code sent successfully");
+            res.put("user", user);
+            return res;
+        } catch (Exception e) {
+            Map<String, Object> err = Response.responseError();
+            err.put("data", e.getMessage());
+            return err;
+        }
     }
 
 }

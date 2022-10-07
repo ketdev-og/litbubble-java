@@ -1,32 +1,60 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
-<head>
+  <head>
     <title>Spring boot eamil teplate with Thymeleaf</title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'/>
+    <link
+      href="http://fonts.googleapis.com/css?family=Roboto"
+      rel="stylesheet"
+      type="text/css"
+    />
 
     <!-- use the font -->
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            font-size: 48px;
-        }
+      body {
+        font-family: "Roboto", sans-serif;
+        font-size: 48px;
+      }
     </style>
-</head>
- <body>
-    <h1 th:text="${'Hello Dear ' + name}" style="text-align: center;"></h1>
+  </head>
+  <body>
+    <div
+      th:if="${verifyCode != null}"
+      style="text-align: center; margin-top: 2rem"
+    >
+      <h1 th:text="${'Hello ' + name}" style="text-align: center"></h1>
 
-    <h2 style="text-align: center;">
-      You have been successfully created an account  on
-      <span th:text="${#dates.format(#dates.createNow(), 'dd MMM yyyy HH:mm')}"></span>
-    </h2>
-    
-    <p style="text-align: center">
-      Your verifcation code is <h1 th:text="${verifyCode}" style="text-align: center; color: #97f57d; font-size: 2rem;"></h1> 
-    </p>
-  
+      <h2 style="text-align: center">
+        You have been successfully created an account on
+        <span
+          th:text="${#dates.format(#dates.createNow(), 'dd MMM yyyy HH:mm')}"
+        ></span>
+      </h2>
+
+      Your verifcation code is
+      <h1
+        th:text="${verifyCode}"
+        style="text-align: center; color: #97f57d; font-size: 2rem"
+      ></h1>
+    </div>
+
+    <div
+      th:if="${resetToken != null}"
+      style="text-align: center; margin-top: 2rem"
+    >
+      <h1 th:text="${'Hello ' + name}" style="text-align: center"></h1>
+      <h2 style="text-align: center">
+        Click the link below to change your password
+      </h2>
+      <h1>
+        <a
+          th:href="@{'http://localhost:8080/'+${resetToken}}"
+          th:text="${'Click to change password'}"
+        ></a>
+      </h1>
+    </div>
   </body>
 </html>

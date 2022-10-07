@@ -10,5 +10,6 @@ public class SendEmailEvent {
     private String emailSubject;
     private Map<String, Object> props;
     public String verifyCode;
+    public String resetToken;
 
 }

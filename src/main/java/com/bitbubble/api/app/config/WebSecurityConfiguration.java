@@ -24,8 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 
-
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -48,7 +46,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors();
-        http.csrf().disable().authorizeRequests().antMatchers("/authenticate","/register_user","/createRole").permitAll()
+        http.csrf().disable().authorizeRequests()
+                .antMatchers("/authenticate", "/register_user", "/createRole", "/token/verify", "/forgot_password")
+                .permitAll()
                 .antMatchers("/auth/admin/*").hasAuthority("ROLE_ADMIN")
                 .antMatchers("/auth/*").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                 .antMatchers(HttpHeaders.ALLOW).permitAll()
@@ -76,5 +76,5 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
         authenticationManagerBuilder.userDetailsService(jwtService).passwordEncoder(passwordEncoder());
     }
-    
+
 }

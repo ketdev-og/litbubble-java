@@ -21,7 +21,7 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
-import lombok.NonNull;
+
 
 
 @Data
@@ -30,7 +30,7 @@ import lombok.NonNull;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UserId")
     private Long Id;
     private String userName;
@@ -59,6 +59,9 @@ public class User {
     @Column(columnDefinition = "boolean default false")
     private Boolean isVerified;
 
+    @Column(columnDefinition = "boolean default false")
+    private Boolean validToReset;
+
     @Column(name = "created")
     private Date created;
 
@@ -66,6 +69,9 @@ public class User {
 
     @Column(name = "updated")
     private Date updated;
+
+
+    private String resetPasswordToken;
 
     @PrePersist
     protected void onCreate() {
