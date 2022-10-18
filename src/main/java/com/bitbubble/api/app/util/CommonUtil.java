@@ -30,7 +30,7 @@ public class CommonUtil {
     }
 
 
-    private String getUserAuth() {
+    public static String getUserAuth() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getUsername();
     }

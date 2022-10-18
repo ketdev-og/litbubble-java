@@ -35,19 +35,19 @@ public class JwtController {
 
         @PostMapping({ "/authenticate" })
         public Map<String, Object> createJwtToken(@RequestBody JwtRequest jwtRequest) throws Exception {
+                Response response =  new Response();
                 try {
                         JwtResponse data = jwtService.createJwtResponse(jwtRequest);
                         Claims claims = jwtutil.getAllClaimsFromToken(data.getJwtToken());
-                        Response response = new Response();
+                        
                         Map<String, Object> res =  response.responseOk();
                         res.put("data", data);
                         res.put("payload", claims);
                         return res;
 
                 } catch (Exception e) {
-                        Response response = new Response();
                         Map<String, Object> err = response.responseError();
-                        err.put("data", e.getMessage());
+                        err.put("data", "invalid email or password");
                         return err;
                 }
 
@@ -55,12 +55,12 @@ public class JwtController {
 
         @PostMapping({ "/refresh" })
         public Map<String, Object> refreshUserToken(@RequestBody RefreshRequest token) {
+                Response response = new Response();
                 try {
                         Optional<RefreshToken> ref = refreshTokenService.findByToken(token);
                         RefreshToken verify = refreshTokenService.verifyExpiration(ref.get());
                         User user = verify.getUser();
                        
-                        Response response = new Response();
                         String newToken = jwtutil.generateTokenByName(user);
                         Claims claims = jwtutil.getAllClaimsFromToken(newToken);
                         Map<String, Object> res = response.responseOk();
@@ -69,7 +69,6 @@ public class JwtController {
                         return res;
 
                 } catch (Exception e) {
-                        Response response = new Response();
                         Map<String, Object> err = response.responseError();
                         err.put("data", e.getMessage());
                         return err;

@@ -49,15 +49,14 @@ public class JwtService implements UserDetailsService {
         UserDetails userDetails = loadUserByUsername(userName);
         String newgeneratedToken = jwtutil.generateToken(userDetails);
         User user = userRepo.findByEmail(userName);
+        
         RefreshToken token = refreshTokenService.createRefreshToken(user.getId());
-
         return new JwtResponse(user, newgeneratedToken, token);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.findByEmail(username);
-        System.out.println(getAuthorities(user));
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getUserPassword(),
                 getAuthorities(user));
 
@@ -69,7 +68,7 @@ public class JwtService implements UserDetailsService {
         } catch (DisabledException e) {
             throw new Exception("user is disabled");
         } catch (BadCredentialsException e) {
-            throw new Exception("bad credentials from user");
+            throw new Exception("invalid email or password");
         }
 
     }

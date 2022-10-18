@@ -52,7 +52,7 @@ public class jwtutil {
 
     public String generateToken(UserDetails userDetails){
         Map <String, Object> claims = new HashMap<>();
-        claims.put("userName", userDetails.getUsername());
+       
         return Jwts.builder().setClaims(claims)
                                 .setSubject(userDetails.getUsername())
                                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -64,9 +64,9 @@ public class jwtutil {
 
     public String generateTokenByName(User user){
         Map <String, Object> claims = new HashMap<>();
-        claims.put("userName", user.getUserName());
+       
         return Jwts.builder().setClaims(claims)
-                                .setSubject(user.getUserName())
+                                .setSubject(user.getEmail())
                                 .setIssuedAt(new Date(System.currentTimeMillis()))
                                 .setExpiration(new Date(System.currentTimeMillis()+ TOKEN_VALIDITY * 1000))
                                 .signWith(key)

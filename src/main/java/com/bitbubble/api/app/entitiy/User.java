@@ -54,6 +54,8 @@ public class User {
     private  String state;
     private String wallet;
     private String pref;
+    private String postal;
+
 
     
     @Column(columnDefinition = "boolean default false")
