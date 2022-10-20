@@ -18,7 +18,7 @@ public class UserService {
         return userRepo.save(user);
     }
 
-    public User getVerifyCode(String token) {
+    public User getUserByVerifyCode(String token) {
         return userRepo.findByVerifyCode(token);
     }
 

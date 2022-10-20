@@ -7,7 +7,7 @@ spring:
   jpa:
     hibernate.ddl-auto: update
     generate-ddl: true
-    show-sql: true
+    show-sql: false
     hibernate.naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

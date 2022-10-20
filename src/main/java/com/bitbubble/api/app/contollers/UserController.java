@@ -49,20 +49,21 @@ public class UserController {
     @Autowired
     private UserRepo userRepo;
 
+    @Autowired
+    private CommonUtil common;
+
     @PostMapping({ "/register_user" })
     private Map<String, Object> createUser(@RequestBody User user) {
 
-        CommonUtil commonUtil = new CommonUtil();
         Response response = new Response();
         Map<String, Object> res = response.responseOk();
         Map<String, Object> err = response.responseError();
         try {
            
             Set<Role> userRole = roleService.findByRoleName("User");
-            System.out.println(userRole);
             user.setRole(userRole);
             user.setUserPassword(CommonUtil.getEncodedPassword(user.getUserPassword(), passwordEncoder));
-            user.setVerifyCode(commonUtil.RandomNumber());
+            user.setVerifyCode(common.RandomNumber());
 
             User userInfo = userService.createUser(user);
             if(userInfo.equals(null)){
@@ -88,17 +89,22 @@ public class UserController {
 
     @PostMapping("/token/verify")
     private Map<String, Object> verifyUserToken(@RequestBody VerifyCode token) {
-        CommonUtil common = new CommonUtil();
+       
+        
         Response response = new Response();
         Map<String, Object> res = response.responseOk();
         Map<String, Object> err = response.responseError();
         try {
+            
             if (!common.VerifyToken(token.getToken())) {
                 res.put("data", "invalid token " + token.getToken());
                 return res;
+               
             }
+           
 
-            User user = userService.getVerifyCode(token.getToken());
+            User user = userService.getUserByVerifyCode(token.getToken());
+            
             if(user.equals(null)){
                 err.put("data", "user not found");
                 return err;

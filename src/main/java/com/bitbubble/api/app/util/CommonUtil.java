@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 
 import com.bitbubble.api.app.entitiy.User;
 import com.bitbubble.api.app.service.UserService;
 
+
+@Component
 public class CommonUtil {
 
 
@@ -21,8 +24,8 @@ public class CommonUtil {
     
     public String RandomNumber(){
         Random rad =  new Random();
-        int number = rad.nextInt(999999);
-        return String.format("%06d", number);
+        int number = rad.nextInt(9999);
+        return String.format("%04d", number);
     }
 
     public static String getEncodedPassword(String password, PasswordEncoder passwordEncoder) {
@@ -37,9 +40,9 @@ public class CommonUtil {
 
     public Boolean VerifyToken(String token) {
         String user = getUserAuth();
-
-        User userToken = userService.getVerifyCode(token);
-
+       
+        User userToken = userService.getUserByVerifyCode(token);
+        
         if (user.equals(userToken.getEmail())) {
             return true;
         }
