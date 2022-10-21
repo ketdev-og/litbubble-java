@@ -56,4 +56,8 @@ public class CommonUtil {
         //localhost:8080/verifytoken should be replaced by //localhost:8080
         return siteUrl.replace(request.getServletPath(), "");
     }
+
+    public void saveCountry(){
+        
+    }
 }
